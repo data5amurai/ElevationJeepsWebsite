@@ -683,7 +683,7 @@
 
     // Actions
     html += '<div class="estimate-actions">';
-    if (viewRole === 'customer' && est.status === 'pending') {
+    if (viewRole === 'customer' && (est.status === 'pending' || est.status === 'commented')) {
       html += `<button class="btn btn-approve" id="approve-btn">Approve Estimate</button>`;
       html += `<button class="btn btn-deny" id="deny-btn">Deny Estimate</button>`;
     }
