@@ -35,9 +35,9 @@ document.addEventListener('DOMContentLoaded', () => {
   if (nav) {
     window.addEventListener('scroll', () => {
       if (window.scrollY > 50) {
-        nav.style.background = 'rgba(29, 38, 44, 0.98)';
+        nav.style.background = 'rgba(38, 50, 64, 0.98)';
       } else {
-        nav.style.background = 'rgba(29, 38, 44, 0.95)';
+        nav.style.background = 'rgba(38, 50, 64, 0.95)';
       }
       // Back-to-top visibility
       if (backToTop) {

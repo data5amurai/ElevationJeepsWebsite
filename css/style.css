@@ -7,16 +7,16 @@
   --color-teal: #5baab7;
   --color-teal-dark: #3d8a96;
   --color-teal-light: #7ec4cf;
-  --color-dark: #1d262c;
-  --color-dark-lighter: #2a3640;
-  --color-dark-card: #243038;
+  --color-dark: #263240;
+  --color-dark-lighter: #324452;
+  --color-dark-card: #2c3c4a;
   --color-white: #f5f5f5;
   --color-offwhite: #e8eaed;
   --color-text: #d1d5db;
   --color-text-muted: #9ca3af;
   --color-accent: #e2b04a;
-  --font-heading: 'Oswald', sans-serif;
-  --font-body: 'Open Sans', sans-serif;
+  --font-heading: 'Bebas Neue', sans-serif;
+  --font-body: 'Barlow', sans-serif;
   --max-width: 1280px;
   --section-pad: 80px;
   --transition: 0.3s ease;
@@ -78,7 +78,7 @@ h1, h2, h3, h4, h5, h6 {
   left: 0;
   right: 0;
   z-index: 1000;
-  background: rgba(29, 38, 44, 0.95);
+  background: rgba(38, 50, 64, 0.95);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid rgba(91, 170, 183, 0.15);
   transition: background var(--transition);
@@ -167,9 +167,9 @@ h1, h2, h3, h4, h5, h6 {
   inset: 0;
   background: linear-gradient(
     to bottom,
-    rgba(29, 38, 44, 0.6) 0%,
-    rgba(29, 38, 44, 0.4) 50%,
-    rgba(29, 38, 44, 0.9) 100%
+    rgba(38, 50, 64, 0.55) 0%,
+    rgba(38, 50, 64, 0.45) 40%,
+    rgba(38, 50, 64, 0.85) 100%
   );
 }
 
@@ -181,9 +181,10 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .hero h1 {
-  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  font-size: clamp(3.5rem, 8vw, 6rem);
   margin-bottom: 16px;
-  text-shadow: 0 2px 20px rgba(0,0,0,0.5);
+  text-shadow: 0 3px 30px rgba(0,0,0,0.7), 0 1px 4px rgba(0,0,0,0.9);
+  letter-spacing: 4px;
 }
 
 .hero h1 .highlight {
@@ -191,10 +192,12 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .hero .tagline {
-  font-size: clamp(1.1rem, 2.5vw, 1.5rem);
-  color: var(--color-text);
+  font-size: clamp(1.3rem, 3vw, 1.8rem);
+  color: var(--color-white);
   margin-bottom: 32px;
-  font-weight: 300;
+  font-weight: 400;
+  text-shadow: 0 2px 16px rgba(0,0,0,0.6);
+  letter-spacing: 3px;
 }
 
 /* ---- BUTTONS ---- */
@@ -501,7 +504,7 @@ h1, h2, h3, h4, h5, h6 {
 
 /* ---- FOOTER ---- */
 .footer {
-  background: #151c22;
+  background: #1e2a34;
   padding: 60px 0 24px;
   border-top: 1px solid rgba(91, 170, 183, 0.1);
 }
@@ -902,7 +905,7 @@ h1, h2, h3, h4, h5, h6 {
     left: 0;
     right: 0;
     flex-direction: column;
-    background: rgba(29, 38, 44, 0.98);
+    background: rgba(38, 50, 64, 0.98);
     padding: 16px;
     border-bottom: 1px solid rgba(91, 170, 183, 0.15);
     gap: 4px;
