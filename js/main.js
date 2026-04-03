@@ -29,8 +29,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Scroll-based nav background
+  // Scroll-based nav background + back-to-top button
   const nav = document.querySelector('.nav');
+  const backToTop = document.querySelector('.back-to-top');
   if (nav) {
     window.addEventListener('scroll', () => {
       if (window.scrollY > 50) {
@@ -38,6 +39,19 @@ document.addEventListener('DOMContentLoaded', () => {
       } else {
         nav.style.background = 'rgba(29, 38, 44, 0.95)';
       }
+      // Back-to-top visibility
+      if (backToTop) {
+        if (window.scrollY > 400) {
+          backToTop.classList.add('visible');
+        } else {
+          backToTop.classList.remove('visible');
+        }
+      }
+    });
+  }
+  if (backToTop) {
+    backToTop.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     });
   }
 
