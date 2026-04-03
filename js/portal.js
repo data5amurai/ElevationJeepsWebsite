@@ -7,7 +7,8 @@
   const STORE_KEYS = {
     users: 'ej_portal_users',
     estimates: 'ej_portal_estimates',
-    session: 'ej_portal_session'
+    session: 'ej_portal_session',
+    leads: 'ej_portal_leads'
   };
 
   function getStore(key) {
@@ -23,7 +24,7 @@
     if (!getStore(STORE_KEYS.users)) {
       setStore(STORE_KEYS.users, [
         { id: 'admin-1', role: 'admin', name: 'Elevation Jeeps Admin', email: 'admin@elevationjeeps.com', password: 'admin123', phone: '(832) 974-4133', emailValidated: true },
-        { id: 'cust-1', role: 'customer', name: 'John Smith', email: 'customer@test.com', password: 'cust123', phone: '(713) 555-0101', address: '123 Oak Lane, Houston, TX 77001', vehicle: '2024 Jeep Wrangler JL Rubicon', emailValidated: true }
+        { id: 'cust-1', role: 'customer', name: 'John Smith', email: 'customer@test.com', password: 'cust123', phone: '(713) 555-0101', address: '123 Oak Lane, Houston, TX 77001', vehicle: '2024 Jeep Wrangler JL Rubicon', emailValidated: true, marketingConsent: true }
       ]);
     }
     if (!getStore(STORE_KEYS.estimates)) {
@@ -61,6 +62,8 @@
   function saveUsers(users) { setStore(STORE_KEYS.users, users); }
   function getEstimates() { return getStore(STORE_KEYS.estimates) || []; }
   function saveEstimates(estimates) { setStore(STORE_KEYS.estimates, estimates); }
+  function getLeads() { return getStore(STORE_KEYS.leads) || []; }
+  function saveLeads(leads) { setStore(STORE_KEYS.leads, leads); }
   function getSession() { return getStore(STORE_KEYS.session); }
   function setSession(user) { setStore(STORE_KEYS.session, user); }
   function clearSession() { localStorage.removeItem(STORE_KEYS.session); }
@@ -162,11 +165,13 @@
       showSection('admin');
       renderAdminEstimates();
       renderCustomers();
+      renderLeads();
       populateCustomerDropdown();
     } else {
       showSection('customer');
       els.customerName.textContent = user.name;
       renderCustomerEstimates(user.id);
+      renderCustomerProfile(user.id);
     }
   });
 
@@ -816,13 +821,212 @@
           <strong>Address</strong>
           <span>${esc(user.address || '—')}</span>
         </div>
-        <div class="profile-item" style="grid-column: 1 / -1;">
+        <div class="profile-item">
           <strong>Vehicle</strong>
           <span>${esc(user.vehicle || '—')}</span>
         </div>
+        <div class="profile-item">
+          <strong>Marketing Consent</strong>
+          <span>${user.marketingConsent !== false ? '&#10003; Opted in' : '&#10007; Opted out'}</span>
+        </div>
       </div>
-      <p style="margin-top: 20px; font-size: 0.85rem; color: var(--color-text-muted);">To update your profile information, please contact Elevation Jeeps directly.</p>
+      <button class="btn btn-primary btn-sm" id="edit-profile-btn" style="margin-top: 16px;">Edit Profile</button>
     `;
+
+    document.getElementById('edit-profile-btn')?.addEventListener('click', () => {
+      profileEl.style.display = 'none';
+      const editForm = document.getElementById('profile-edit-form');
+      editForm.style.display = '';
+      document.getElementById('profile-name').value = user.name || '';
+      document.getElementById('profile-email').value = user.email || '';
+      document.getElementById('profile-phone').value = user.phone || '';
+      document.getElementById('profile-address').value = user.address || '';
+      document.getElementById('profile-vehicle').value = user.vehicle || '';
+      document.getElementById('profile-marketing-consent').checked = user.marketingConsent !== false;
+    });
+  }
+
+  // Save profile edits
+  const saveProfileBtn = document.getElementById('save-profile-btn');
+  const cancelProfileBtn = document.getElementById('cancel-profile-btn');
+
+  if (saveProfileBtn) {
+    saveProfileBtn.addEventListener('click', () => {
+      const session = getSession();
+      if (!session) return;
+      const users = getUsers();
+      const idx = users.findIndex(u => u.id === session.id);
+      if (idx === -1) return;
+
+      const name = document.getElementById('profile-name').value.trim();
+      if (!name) {
+        const msgEl = document.getElementById('profile-save-msg');
+        if (msgEl) {
+          msgEl.style.display = '';
+          msgEl.style.background = 'rgba(241,70,104,0.1)';
+          msgEl.style.borderColor = 'rgba(241,70,104,0.3)';
+          msgEl.style.color = '#f14668';
+          msgEl.textContent = 'Name is required.';
+        }
+        return;
+      }
+
+      users[idx].name = name;
+      users[idx].phone = document.getElementById('profile-phone').value.trim();
+      users[idx].address = document.getElementById('profile-address').value.trim();
+      users[idx].vehicle = document.getElementById('profile-vehicle').value.trim();
+      users[idx].marketingConsent = document.getElementById('profile-marketing-consent').checked;
+      saveUsers(users);
+
+      // Update session name
+      session.name = name;
+      setSession(session);
+      const customerNameEl = document.getElementById('customer-name');
+      if (customerNameEl) customerNameEl.textContent = name;
+
+      const msgEl = document.getElementById('profile-save-msg');
+      if (msgEl) {
+        msgEl.style.display = '';
+        msgEl.style.background = 'rgba(72,199,142,0.1)';
+        msgEl.style.borderColor = 'rgba(72,199,142,0.3)';
+        msgEl.style.color = '#48c78e';
+        msgEl.textContent = 'Profile updated successfully!';
+      }
+
+      // Re-render and switch back to view mode after a moment
+      setTimeout(() => {
+        document.getElementById('profile-edit-form').style.display = 'none';
+        document.getElementById('customer-profile-info').style.display = '';
+        if (msgEl) msgEl.style.display = 'none';
+        renderCustomerProfile(session.id);
+      }, 1500);
+    });
+  }
+
+  if (cancelProfileBtn) {
+    cancelProfileBtn.addEventListener('click', () => {
+      document.getElementById('profile-edit-form').style.display = 'none';
+      document.getElementById('customer-profile-info').style.display = '';
+      const msgEl = document.getElementById('profile-save-msg');
+      if (msgEl) msgEl.style.display = 'none';
+    });
+  }
+
+  // ---- ADMIN LEADS ----
+  function renderLeads(filter) {
+    const leads = getLeads();
+    const leadsListEl = document.getElementById('leads-list');
+    if (!leadsListEl) return;
+
+    let filtered = leads;
+    if (filter) {
+      const q = filter.toLowerCase();
+      filtered = leads.filter(l =>
+        (l.name || '').toLowerCase().includes(q) ||
+        (l.email || '').toLowerCase().includes(q) ||
+        (l.phone || '').includes(q)
+      );
+    }
+
+    if (!filtered.length) {
+      leadsListEl.innerHTML = '<div class="empty-state"><p>No leads found. Leads are created when visitors submit the Contact Us form.</p></div>';
+      return;
+    }
+
+    leadsListEl.innerHTML = filtered.map(l => `
+      <div class="customer-card lead-card" data-lead-id="${l.id}">
+        <div class="customer-info">
+          <h4>${esc(l.name)}</h4>
+          <p>${esc(l.email)}${l.phone ? ' &bull; ' + esc(l.phone) : ''}</p>
+          ${l.vehicle ? `<p style="font-size:0.85rem; color: var(--color-text-muted);">Vehicle: ${esc(l.vehicle)}</p>` : ''}
+          ${l.service ? `<p style="font-size:0.85rem; color: var(--color-text-muted);">Interest: ${esc(l.service)}</p>` : ''}
+          ${l.message ? `<p style="font-size:0.85rem; color: var(--color-text-muted); font-style: italic;">"${esc(l.message.substring(0, 120))}${l.message.length > 120 ? '...' : ''}"</p>` : ''}
+          <p style="font-size: 0.8rem; color: var(--color-text-muted);">Submitted: ${formatDate(l.createdAt)}</p>
+          <span class="lead-status status-${l.status === 'converted' ? 'approved' : 'pending'}">${l.status === 'converted' ? 'Converted' : 'New'}</span>
+        </div>
+        ${l.status !== 'converted' ? `<div class="lead-actions">
+          <button class="btn btn-primary btn-sm convert-lead-btn" data-lead-id="${l.id}">Convert to Customer</button>
+        </div>` : ''}
+      </div>
+    `).join('');
+
+    leadsListEl.querySelectorAll('.convert-lead-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        convertLeadToCustomer(btn.dataset.leadId);
+      });
+    });
+  }
+
+  function convertLeadToCustomer(leadId) {
+    const leads = getLeads();
+    const leadIdx = leads.findIndex(l => l.id === leadId);
+    if (leadIdx === -1) return;
+
+    const lead = leads[leadIdx];
+    const users = getUsers();
+
+    // Check if email already exists as a customer
+    if (users.find(u => u.email.toLowerCase() === lead.email.toLowerCase())) {
+      const leadsListEl = document.getElementById('leads-list');
+      const card = leadsListEl?.querySelector(`[data-lead-id="${leadId}"]`);
+      if (card) {
+        const actionsDiv = card.querySelector('.lead-actions');
+        if (actionsDiv) actionsDiv.innerHTML = '<p style="color:#f14668; font-size:0.85rem;">A customer with this email already exists.</p>';
+      }
+      return;
+    }
+
+    const generatedPassword = generatePassword();
+    const newUser = {
+      id: generateId(),
+      role: 'customer',
+      name: lead.name,
+      email: lead.email,
+      phone: lead.phone || '',
+      address: '',
+      vehicle: lead.vehicle || '',
+      password: generatedPassword,
+      emailValidated: true, // In production this would be false until email confirmed
+      marketingConsent: true
+    };
+    users.push(newUser);
+    saveUsers(users);
+
+    // Mark lead as converted
+    leads[leadIdx].status = 'converted';
+    leads[leadIdx].convertedCustomerId = newUser.id;
+    saveLeads(leads);
+
+    // Refresh views
+    renderLeads(document.getElementById('leads-search')?.value);
+    renderCustomers();
+    populateCustomerDropdown();
+
+    // Show success feedback inline
+    const leadsListEl = document.getElementById('leads-list');
+    const card = leadsListEl.querySelector(`[data-lead-id="${leadId}"]`);
+    if (card) {
+      const actionsDiv = card.querySelector('.lead-actions');
+      if (actionsDiv) {
+        actionsDiv.innerHTML = `<p style="color:#48c78e; font-size:0.85rem; font-weight:600;">&#10003; Converted! Temp password: <code style="background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;">${esc(generatedPassword)}</code></p>`;
+      }
+    }
+  }
+
+  // Leads search
+  const leadsSearch = document.getElementById('leads-search');
+  if (leadsSearch) {
+    leadsSearch.addEventListener('input', () => renderLeads(leadsSearch.value));
+  }
+
+  // ---- WORKFLOW BANNER ----
+  const dismissWorkflow = document.getElementById('dismiss-workflow');
+  if (dismissWorkflow) {
+    dismissWorkflow.addEventListener('click', () => {
+      const banner = document.getElementById('admin-workflow-banner');
+      if (banner) banner.style.display = 'none';
+    });
   }
 
   // ---- CHANGE PASSWORD ----
@@ -891,6 +1095,7 @@
       showSection('admin');
       renderAdminEstimates();
       renderCustomers();
+      renderLeads();
       populateCustomerDropdown();
     } else {
       showSection('customer');

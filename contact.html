@@ -224,6 +224,23 @@
   <script>
     function handleSubmit(e) {
       e.preventDefault();
+      // Store the submission as a lead
+      var lead = {
+        id: 'lead-' + Date.now() + '-' + Math.random().toString(36).substr(2, 6),
+        name: document.getElementById('name').value.trim(),
+        email: document.getElementById('email').value.trim(),
+        phone: document.getElementById('phone').value.trim(),
+        vehicle: document.getElementById('vehicle').value.trim(),
+        service: document.getElementById('service').value,
+        message: document.getElementById('message').value.trim(),
+        status: 'new',
+        createdAt: new Date().toISOString()
+      };
+      var leads = [];
+      try { leads = JSON.parse(localStorage.getItem('ej_portal_leads')) || []; } catch(ex) { leads = []; }
+      leads.push(lead);
+      localStorage.setItem('ej_portal_leads', JSON.stringify(leads));
+
       var status = document.getElementById('form-status');
       status.style.display = 'block';
       status.style.color = 'var(--color-teal)';

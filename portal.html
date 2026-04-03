@@ -81,10 +81,33 @@
         <button class="btn btn-outline btn-sm" id="admin-logout">Sign Out</button>
       </div>
 
+      <!-- Workflow Banner -->
+      <div class="workflow-banner" id="admin-workflow-banner">
+        <div class="workflow-steps">
+          <div class="workflow-step">
+            <span class="workflow-step-num">1</span>
+            <span class="workflow-step-text">Create a Customer</span>
+          </div>
+          <span class="workflow-arrow">&rarr;</span>
+          <div class="workflow-step">
+            <span class="workflow-step-num">2</span>
+            <span class="workflow-step-text">Create &amp; Assign Estimate</span>
+          </div>
+          <span class="workflow-arrow">&rarr;</span>
+          <div class="workflow-step">
+            <span class="workflow-step-num">3</span>
+            <span class="workflow-step-text">Customer Reviews</span>
+          </div>
+        </div>
+        <p class="workflow-hint">A customer must be created before an estimate can be assigned to them.</p>
+        <button class="workflow-dismiss" id="dismiss-workflow">&times;</button>
+      </div>
+
       <!-- Admin Tabs -->
       <div class="portal-tabs">
         <button class="portal-tab active" data-panel="admin-estimates">Estimates</button>
         <button class="portal-tab" data-panel="admin-customers">Customers</button>
+        <button class="portal-tab" data-panel="admin-leads">Leads</button>
         <button class="portal-tab" data-panel="admin-create">New Estimate</button>
       </div>
 
@@ -146,6 +169,18 @@
           <input type="text" id="customer-search" placeholder="Search by name, phone, or email...">
         </div>
         <div id="customers-list" class="customers-list"></div>
+      </div>
+
+      <!-- Leads -->
+      <div class="portal-panel" id="admin-leads">
+        <div class="panel-header">
+          <h3>Leads</h3>
+        </div>
+        <p style="color: var(--color-text-muted); margin-bottom: 16px; font-size: 0.9rem;">Leads are generated from the Contact Us page. Convert a lead to a customer to begin the verification process.</p>
+        <div class="form-group" style="margin-bottom: 24px;">
+          <input type="text" id="leads-search" placeholder="Search leads by name, email, or phone...">
+        </div>
+        <div id="leads-list" class="customers-list"></div>
       </div>
 
       <!-- Create Estimate -->
@@ -254,6 +289,42 @@
         <div class="portal-form-card">
           <h3>My Profile</h3>
           <div id="customer-profile-info"></div>
+          <div id="profile-edit-form" style="display:none;">
+            <div class="grid-2">
+              <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" id="profile-name" placeholder="Full name">
+              </div>
+              <div class="form-group">
+                <label>Phone Number</label>
+                <input type="tel" id="profile-phone" placeholder="(555) 123-4567">
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Email Address</label>
+              <input type="email" id="profile-email" disabled>
+              <p style="font-size:0.8rem; color:var(--color-text-muted); margin-top:4px;">Email cannot be changed. Contact Elevation Jeeps to update your email.</p>
+            </div>
+            <div class="form-group">
+              <label>Address</label>
+              <input type="text" id="profile-address" placeholder="123 Main St, Houston, TX 77001">
+            </div>
+            <div class="form-group">
+              <label>Vehicle</label>
+              <input type="text" id="profile-vehicle" placeholder="e.g. 2024 Jeep Wrangler JL">
+            </div>
+            <div class="form-group" style="margin-top: 16px;">
+              <label class="checkbox-label">
+                <input type="checkbox" id="profile-marketing-consent" checked>
+                <span>I consent to Elevation Jeeps using my email or phone number on file for marketing campaigns and mailing lists.</span>
+              </label>
+            </div>
+            <div class="btn-group" style="justify-content: flex-start; margin-top: 16px;">
+              <button class="btn btn-primary btn-sm" id="save-profile-btn">Save Changes</button>
+              <button class="btn btn-outline btn-sm" id="cancel-profile-btn">Cancel</button>
+            </div>
+            <div id="profile-save-msg" class="portal-success" style="display:none;"></div>
+          </div>
         </div>
       </div>
 
