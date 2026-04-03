@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact — Elevation Jeeps</title>
+  <meta name="description" content="Contact Elevation Jeeps in Houston, TX. Schedule service, get an estimate, or ask about customization options. 17655 Katy Fwy, Houston TX 77094.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600;700&family=Open+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <link rel="icon" type="image/png" href="https://elevationjeeps.com/cdn/shop/files/Elevation_Jeeps_Logo_Colored_Lockup_Jeeps_Filter_copy_250x.png">
+</head>
+<body>
+
+  <!-- NAVIGATION -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">
+        <img src="https://elevationjeeps.com/cdn/shop/files/Elevation_Jeeps_Logo_Colored_Lockup_Jeeps_Filter_copy_250x.png" alt="Elevation Jeeps Logo">
+      </a>
+      <button class="nav-toggle" aria-label="Toggle navigation">
+        <span></span><span></span><span></span>
+      </button>
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="services.html">Services</a></li>
+        <li><a href="partners.html">Partners</a></li>
+        <li><a href="nation.html">Elevation Nation</a></li>
+        <li><a href="gallery.html">Gallery</a></li>
+        <li><a href="contact.html" class="active">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- PAGE HERO -->
+  <section class="page-hero">
+    <div class="container">
+      <h1>Contact <span style="color: var(--color-teal);">Us</span></h1>
+      <p>Ready to discuss your build, schedule a service, or just ask a question? We're here to help.</p>
+    </div>
+  </section>
+
+  <!-- CONTACT GRID -->
+  <section class="section section-dark">
+    <div class="container">
+      <div class="split fade-in">
+        <!-- FORM -->
+        <div>
+          <h2 style="font-size: 1.6rem; margin-bottom: 24px;">Send Us a Message</h2>
+          <form id="contact-form" action="#" method="POST" onsubmit="return handleSubmit(event)">
+            <div class="grid-2">
+              <div class="form-group">
+                <label for="name">Name</label>
+                <input type="text" id="name" name="name" placeholder="Your name" required>
+              </div>
+              <div class="form-group">
+                <label for="phone">Phone</label>
+                <input type="tel" id="phone" name="phone" placeholder="(555) 123-4567">
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="email">Email</label>
+              <input type="email" id="email" name="email" placeholder="you@email.com" required>
+            </div>
+            <div class="form-group">
+              <label for="vehicle">Vehicle</label>
+              <input type="text" id="vehicle" name="vehicle" placeholder="e.g. 2024 Jeep Wrangler JL, 2023 Ford Bronco">
+            </div>
+            <div class="form-group">
+              <label for="service">What Are You Interested In?</label>
+              <select id="service" name="service">
+                <option value="">Select an option</option>
+                <option value="customization">Vehicle Customization</option>
+                <option value="service">Scheduled Service / Maintenance</option>
+                <option value="suspension">Suspension / Lift Kit</option>
+                <option value="lighting">Lighting Upgrade</option>
+                <option value="bumpers">Bumpers / Armor</option>
+                <option value="exhaust">Exhaust / Performance</option>
+                <option value="audio">Audio System</option>
+                <option value="overlanding">Overlanding / Recovery Setup</option>
+                <option value="engine">Engine / Drivetrain Work</option>
+                <option value="consultation">General Consultation</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="message">Message</label>
+              <textarea id="message" name="message" placeholder="Tell us about your project or what you need..." required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%;">Send Message</button>
+            <div id="form-status" style="margin-top: 16px; text-align: center; display: none;"></div>
+          </form>
+        </div>
+
+        <!-- INFO -->
+        <div>
+          <h2 style="font-size: 1.6rem; margin-bottom: 24px;">Get In Touch</h2>
+
+          <!-- Address -->
+          <div style="margin-bottom: 32px;">
+            <h4 style="font-family: var(--font-heading); color: var(--color-teal); text-transform: uppercase; letter-spacing: 1px; font-size: 0.85rem; margin-bottom: 12px;">Location</h4>
+            <p style="color: var(--color-text); font-size: 1rem; line-height: 1.7;">
+              17655 Katy Fwy<br>
+              Houston, Texas 77094
+            </p>
+            <a href="https://www.google.com/maps/search/?api=1&query=17655+Katy+Fwy+Houston+TX+77094" target="_blank" rel="noopener" style="display: inline-block; margin-top: 8px; font-size: 0.9rem;">Get Directions &rarr;</a>
+          </div>
+
+          <!-- Phone -->
+          <div style="margin-bottom: 32px;">
+            <h4 style="font-family: var(--font-heading); color: var(--color-teal); text-transform: uppercase; letter-spacing: 1px; font-size: 0.85rem; margin-bottom: 12px;">Phone</h4>
+            <p style="font-size: 1rem;">
+              <a href="tel:+18329744133" style="color: var(--color-white);">(832) 974-4133</a><br>
+              <a href="tel:+18325308826" style="color: var(--color-white);">(832) 530-8826</a>
+            </p>
+          </div>
+
+          <!-- Email -->
+          <div style="margin-bottom: 32px;">
+            <h4 style="font-family: var(--font-heading); color: var(--color-teal); text-transform: uppercase; letter-spacing: 1px; font-size: 0.85rem; margin-bottom: 12px;">Email</h4>
+            <p style="font-size: 1rem;">
+              <a href="mailto:sales@elevationjeeps.com" style="color: var(--color-white);">sales@elevationjeeps.com</a>
+            </p>
+          </div>
+
+          <!-- Hours -->
+          <div style="margin-bottom: 32px;">
+            <h4 style="font-family: var(--font-heading); color: var(--color-teal); text-transform: uppercase; letter-spacing: 1px; font-size: 0.85rem; margin-bottom: 12px;">Business Hours</h4>
+            <table style="width: 100%; border-collapse: collapse;">
+              <tr style="border-bottom: 1px solid rgba(91,170,183,0.1);">
+                <td style="padding: 8px 0; color: var(--color-text);">Monday &ndash; Friday</td>
+                <td style="padding: 8px 0; color: var(--color-white); text-align: right;">9:00 AM &ndash; 6:00 PM</td>
+              </tr>
+              <tr style="border-bottom: 1px solid rgba(91,170,183,0.1);">
+                <td style="padding: 8px 0; color: var(--color-text);">Saturday</td>
+                <td style="padding: 8px 0; color: var(--color-white); text-align: right;">By Appointment</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; color: var(--color-text);">Sunday</td>
+                <td style="padding: 8px 0; color: var(--color-text-muted); text-align: right;">Closed</td>
+              </tr>
+            </table>
+          </div>
+
+          <!-- Social -->
+          <div>
+            <h4 style="font-family: var(--font-heading); color: var(--color-teal); text-transform: uppercase; letter-spacing: 1px; font-size: 0.85rem; margin-bottom: 12px;">Follow Us</h4>
+            <div style="display: flex; gap: 12px;">
+              <a href="https://www.facebook.com/ElevationJeeps" target="_blank" rel="noopener" style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 50%; background: var(--color-dark-card); color: var(--color-text-muted); font-size: 1rem; transition: all 0.3s ease; text-decoration: none;" title="Facebook">FB</a>
+              <a href="https://www.instagram.com/elevationjeeps/" target="_blank" rel="noopener" style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 50%; background: var(--color-dark-card); color: var(--color-text-muted); font-size: 1rem; transition: all 0.3s ease; text-decoration: none;" title="Instagram">IG</a>
+              <a href="https://www.youtube.com/@ElevationJeeps" target="_blank" rel="noopener" style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 50%; background: var(--color-dark-card); color: var(--color-text-muted); font-size: 1rem; transition: all 0.3s ease; text-decoration: none;" title="YouTube">YT</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MAP -->
+  <section class="section section-darker" style="padding-top: 0;">
+    <div class="container">
+      <div class="fade-in" style="border-radius: 8px; overflow: hidden; border: 1px solid rgba(91,170,183,0.15);">
+        <iframe
+          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3464.123456789!2d-95.6723!3d29.7805!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2s17655+Katy+Fwy+Houston+TX+77094!5e0!3m2!1sen!2sus!4v1"
+          width="100%"
+          height="400"
+          style="border:0; display: block;"
+          allowfullscreen=""
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"
+          title="Elevation Jeeps Location - 17655 Katy Fwy, Houston TX">
+        </iframe>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <img src="https://elevationjeeps.com/cdn/shop/files/Elevation_Jeeps_Logo_Colored_Lockup_Jeeps_Filter_copy_250x.png" alt="Elevation Jeeps" style="height: 44px;">
+          <p>Houston's home for off-road vehicle customization, expert mechanical service, and the Elevation Nation community. Quality. Integrity. Transparency.</p>
+        </div>
+        <div>
+          <h4>Navigate</h4>
+          <ul class="footer-links">
+            <li><a href="about.html">About</a></li>
+            <li><a href="services.html">Services</a></li>
+            <li><a href="partners.html">Partners</a></li>
+            <li><a href="gallery.html">Gallery</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Community</h4>
+          <ul class="footer-links">
+            <li><a href="nation.html">Elevation Nation</a></li>
+            <li><a href="https://www.facebook.com/ElevationJeeps" target="_blank" rel="noopener">Facebook</a></li>
+            <li><a href="https://www.instagram.com/elevationjeeps/" target="_blank" rel="noopener">Instagram</a></li>
+            <li><a href="https://www.youtube.com/@ElevationJeeps" target="_blank" rel="noopener">YouTube</a></li>
+          </ul>
+        </div>
+        <div class="footer-contact">
+          <h4>Contact</h4>
+          <p>17655 Katy Fwy<br>Houston, TX 77094</p>
+          <p><a href="tel:+18329744133">(832) 974-4133</a></p>
+          <p><a href="mailto:sales@elevationjeeps.com">sales@elevationjeeps.com</a></p>
+          <p style="margin-top: 8px; font-size: 0.85rem;">Mon&ndash;Fri: 9AM &ndash; 6PM<br>Sat: By Appointment<br>Sun: Closed</p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>&copy; 2026 Elevation Jeeps (Huss Automotive Group, LLC). All rights reserved.</span>
+        <span>Drive The Experience!</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+  <script>
+    function handleSubmit(e) {
+      e.preventDefault();
+      var status = document.getElementById('form-status');
+      status.style.display = 'block';
+      status.style.color = 'var(--color-teal)';
+      status.textContent = 'Thank you! Your message has been received. We\'ll get back to you shortly.';
+      document.getElementById('contact-form').reset();
+      return false;
+    }
+  </script>
+</body>
+</html>
