@@ -212,6 +212,12 @@
   border: 1px solid rgba(241, 70, 104, 0.3);
 }
 
+.status-commented {
+  background: rgba(91, 170, 183, 0.15);
+  color: var(--color-teal);
+  border: 1px solid rgba(91, 170, 183, 0.3);
+}
+
 .estimate-card-meta {
   display: flex;
   gap: 24px;
@@ -617,6 +623,109 @@
   background: var(--color-teal);
   color: var(--color-dark);
   border-color: var(--color-teal);
+}
+
+/* ---- STATUS FILTER ---- */
+.estimates-filter {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.filter-btn {
+  padding: 6px 16px;
+  border: 1px solid rgba(91, 170, 183, 0.3);
+  background: transparent;
+  color: var(--color-text-muted);
+  border-radius: 20px;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filter-btn:hover {
+  border-color: var(--color-teal);
+  color: var(--color-teal);
+}
+
+.filter-btn.active {
+  background: var(--color-teal);
+  border-color: var(--color-teal);
+  color: var(--color-dark);
+  font-weight: 600;
+}
+
+/* ---- SUCCESS MESSAGE ---- */
+.portal-success {
+  margin-top: 12px;
+  padding: 10px;
+  background: rgba(72, 199, 142, 0.1);
+  border: 1px solid rgba(72, 199, 142, 0.3);
+  border-radius: 6px;
+  color: #48c78e;
+  font-size: 0.9rem;
+}
+
+.portal-hint {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  margin: -4px 0 16px;
+}
+
+/* ---- SELECT DROPDOWN ---- */
+select {
+  width: 100%;
+  padding: 12px 16px;
+  background: var(--color-dark);
+  border: 1px solid rgba(91, 170, 183, 0.2);
+  border-radius: 8px;
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235baab7' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  padding-right: 40px;
+  transition: border-color 0.2s ease;
+}
+
+select:focus {
+  outline: none;
+  border-color: var(--color-teal);
+}
+
+select option {
+  background: #1a2330;
+  color: var(--color-text);
+}
+
+/* ---- PROFILE INFO ---- */
+.profile-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 600px) {
+  .profile-grid { grid-template-columns: 1fr; }
+}
+
+.profile-item strong {
+  display: block;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--color-teal);
+  margin-bottom: 4px;
+}
+
+.profile-item span {
+  font-size: 1rem;
+  color: var(--color-text);
 }
 
 /* ---- ERRORS & EMPTY ---- */

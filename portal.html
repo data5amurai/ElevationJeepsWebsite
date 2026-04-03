@@ -93,6 +93,13 @@
         <div class="panel-header">
           <h3>All Estimates</h3>
         </div>
+        <div class="estimates-filter">
+          <button class="filter-btn active" data-filter="all">All</button>
+          <button class="filter-btn" data-filter="pending">Pending</button>
+          <button class="filter-btn" data-filter="approved">Approved</button>
+          <button class="filter-btn" data-filter="denied">Denied</button>
+          <button class="filter-btn" data-filter="commented">Commented</button>
+        </div>
         <div id="admin-estimates-list" class="estimates-list"></div>
       </div>
 
@@ -116,23 +123,23 @@
             </div>
           </div>
           <div class="form-group">
-            <label>Email</label>
+            <label>Email <span style="color: var(--color-teal); font-size: 0.85em;">(required — a validation email will be sent)</span></label>
             <input type="email" id="cust-email" placeholder="customer@email.com" required>
           </div>
-          <div class="grid-2">
-            <div class="form-group">
-              <label>Vehicle</label>
-              <input type="text" id="cust-vehicle" placeholder="e.g. 2024 Jeep Wrangler JL">
-            </div>
-            <div class="form-group">
-              <label>Password</label>
-              <input type="text" id="cust-password" placeholder="Set a password" required>
-            </div>
+          <div class="form-group">
+            <label>Address</label>
+            <input type="text" id="cust-address" placeholder="123 Main St, Houston, TX 77001">
           </div>
+          <div class="form-group">
+            <label>Vehicle</label>
+            <input type="text" id="cust-vehicle" placeholder="e.g. 2024 Jeep Wrangler JL">
+          </div>
+          <p class="portal-hint">A random password will be auto-generated and sent to the customer after email validation.</p>
           <div class="btn-group" style="justify-content: flex-start;">
-            <button class="btn btn-primary btn-sm" id="save-customer-btn">Save Customer</button>
+            <button class="btn btn-primary btn-sm" id="save-customer-btn">Create Customer &amp; Send Validation</button>
             <button class="btn btn-outline btn-sm" id="cancel-customer-btn">Cancel</button>
           </div>
+          <div id="customer-save-msg" class="portal-success" style="display:none;"></div>
         </div>
         <!-- Customer Search -->
         <div class="form-group" style="margin-bottom: 24px;">
@@ -150,8 +157,9 @@
           <!-- Customer Assignment -->
           <div class="form-group">
             <label>Assign to Customer</label>
-            <input type="text" id="estimate-customer-search" placeholder="Search customer by name, phone, or email...">
-            <div id="customer-search-results" class="search-results"></div>
+            <select id="estimate-customer-select">
+              <option value="">— Select a customer —</option>
+            </select>
             <input type="hidden" id="estimate-customer-id">
             <div id="selected-customer" class="selected-customer"></div>
           </div>
@@ -226,9 +234,48 @@
         <button class="btn btn-outline btn-sm" id="customer-logout">Sign Out</button>
       </div>
 
-      <div id="customer-estimates-list" class="estimates-list"></div>
-      <div id="no-estimates" class="empty-state" style="display: none;">
-        <p>No estimates yet. Once our team prepares an estimate for your vehicle, it will appear here.</p>
+      <!-- Customer Tabs -->
+      <div class="portal-tabs">
+        <button class="portal-tab active" data-panel="cust-estimates">My Estimates</button>
+        <button class="portal-tab" data-panel="cust-profile">My Profile</button>
+        <button class="portal-tab" data-panel="cust-password">Change Password</button>
+      </div>
+
+      <!-- Estimates Panel -->
+      <div class="portal-panel active" id="cust-estimates">
+        <div id="customer-estimates-list" class="estimates-list"></div>
+        <div id="no-estimates" class="empty-state" style="display: none;">
+          <p>No estimates yet. Once our team prepares an estimate for your vehicle, it will appear here.</p>
+        </div>
+      </div>
+
+      <!-- Profile Panel -->
+      <div class="portal-panel" id="cust-profile">
+        <div class="portal-form-card">
+          <h3>My Profile</h3>
+          <div id="customer-profile-info"></div>
+        </div>
+      </div>
+
+      <!-- Change Password Panel -->
+      <div class="portal-panel" id="cust-password">
+        <div class="portal-form-card">
+          <h3>Change Password</h3>
+          <div class="form-group">
+            <label>Current Password</label>
+            <input type="password" id="pwd-current" placeholder="Enter current password">
+          </div>
+          <div class="form-group">
+            <label>New Password</label>
+            <input type="password" id="pwd-new" placeholder="Enter new password (min 6 characters)">
+          </div>
+          <div class="form-group">
+            <label>Confirm New Password</label>
+            <input type="password" id="pwd-confirm" placeholder="Confirm new password">
+          </div>
+          <button class="btn btn-primary" id="change-password-btn">Update Password</button>
+          <div id="password-msg" class="portal-error" style="margin-top: 12px;"></div>
+        </div>
       </div>
     </div>
   </section>

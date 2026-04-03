@@ -22,8 +22,8 @@
   function initData() {
     if (!getStore(STORE_KEYS.users)) {
       setStore(STORE_KEYS.users, [
-        { id: 'admin-1', role: 'admin', name: 'Elevation Jeeps Admin', email: 'admin@elevationjeeps.com', password: 'admin123', phone: '(832) 974-4133' },
-        { id: 'cust-1', role: 'customer', name: 'John Smith', email: 'customer@test.com', password: 'cust123', phone: '(713) 555-0101', vehicle: '2024 Jeep Wrangler JL Rubicon' }
+        { id: 'admin-1', role: 'admin', name: 'Elevation Jeeps Admin', email: 'admin@elevationjeeps.com', password: 'admin123', phone: '(832) 974-4133', emailValidated: true },
+        { id: 'cust-1', role: 'customer', name: 'John Smith', email: 'customer@test.com', password: 'cust123', phone: '(713) 555-0101', address: '123 Oak Lane, Houston, TX 77001', vehicle: '2024 Jeep Wrangler JL Rubicon', emailValidated: true }
       ]);
     }
     if (!getStore(STORE_KEYS.estimates)) {
@@ -66,6 +66,13 @@
   function clearSession() { localStorage.removeItem(STORE_KEYS.session); }
 
   function generateId() { return 'id-' + Date.now() + '-' + Math.random().toString(36).substr(2, 6); }
+
+  function generatePassword() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#';
+    let pw = '';
+    for (let i = 0; i < 10; i++) pw += chars[Math.floor(Math.random() * chars.length)];
+    return pw;
+  }
 
   function calcEstimateTotal(est) {
     let subtotal = 0;
@@ -142,6 +149,12 @@
       return;
     }
 
+    if (!user.emailValidated) {
+      els.loginError.textContent = 'Email not yet validated. Please check your inbox for the validation email.';
+      els.loginError.classList.add('visible');
+      return;
+    }
+
     els.loginError.classList.remove('visible');
     setSession({ id: user.id, role: user.role, name: user.name, email: user.email });
 
@@ -149,6 +162,7 @@
       showSection('admin');
       renderAdminEstimates();
       renderCustomers();
+      populateCustomerDropdown();
     } else {
       showSection('customer');
       els.customerName.textContent = user.name;
@@ -161,21 +175,49 @@
   if (els.customerLogout) els.customerLogout.addEventListener('click', () => { clearSession(); showSection('login'); });
 
   // ---- ADMIN TABS ----
-  document.querySelectorAll('.portal-tab').forEach(tab => {
+  document.querySelectorAll('#admin-section .portal-tab').forEach(tab => {
     tab.addEventListener('click', () => {
-      document.querySelectorAll('.portal-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('#admin-section .portal-tab').forEach(t => t.classList.remove('active'));
       tab.classList.add('active');
-      document.querySelectorAll('.portal-panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('#admin-section .portal-panel').forEach(p => p.classList.remove('active'));
       document.getElementById(tab.dataset.panel).classList.add('active');
+      // Refresh customer dropdown when switching to create estimate
+      if (tab.dataset.panel === 'admin-create') populateCustomerDropdown();
+    });
+  });
+
+  // ---- CUSTOMER TABS ----
+  document.querySelectorAll('#customer-section .portal-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('#customer-section .portal-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      document.querySelectorAll('#customer-section .portal-panel').forEach(p => p.classList.remove('active'));
+      document.getElementById(tab.dataset.panel).classList.add('active');
+    });
+  });
+
+  // ---- STATUS FILTER ----
+  let adminEstimatesFilter = 'all';
+
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      adminEstimatesFilter = btn.dataset.filter;
+      renderAdminEstimates();
     });
   });
 
   // ---- RENDER ADMIN ESTIMATES ----
   function renderAdminEstimates() {
-    const estimates = getEstimates();
+    let estimates = getEstimates();
+    if (adminEstimatesFilter !== 'all') {
+      estimates = estimates.filter(e => e.status === adminEstimatesFilter);
+    }
     const users = getUsers();
     if (!estimates.length) {
-      els.adminEstimatesList.innerHTML = '<div class="empty-state"><p>No estimates created yet.</p></div>';
+      const msg = adminEstimatesFilter === 'all' ? 'No estimates created yet.' : 'No ' + adminEstimatesFilter + ' estimates.';
+      els.adminEstimatesList.innerHTML = '<div class="empty-state"><p>' + msg + '</p></div>';
       return;
     }
     els.adminEstimatesList.innerHTML = estimates.map(est => {
@@ -250,6 +292,10 @@
         <div class="customer-info">
           <h4>${esc(u.name)}</h4>
           <p>${esc(u.email)} &bull; ${esc(u.phone || 'No phone')} &bull; ${esc(u.vehicle || 'No vehicle')}</p>
+          ${u.address ? `<p style="font-size:0.85rem; color: var(--color-text-muted);">${esc(u.address)}</p>` : ''}
+          <p style="font-size: 0.8rem; color: ${u.emailValidated ? '#48c78e' : '#e2b04a'};">
+            ${u.emailValidated ? '&#10003; Email validated' : '&#9888; Awaiting email validation'}
+          </p>
         </div>
       </div>
     `).join('');
@@ -259,90 +305,135 @@
     els.customerSearch.addEventListener('input', () => renderCustomers(els.customerSearch.value));
   }
 
+  // ---- POPULATE CUSTOMER DROPDOWN ----
+  function populateCustomerDropdown() {
+    const select = document.getElementById('estimate-customer-select');
+    if (!select) return;
+    const customers = getUsers().filter(u => u.role === 'customer');
+    select.innerHTML = '<option value="">— Select a customer —</option>' +
+      customers.map(u => `<option value="${u.id}">${esc(u.name)} — ${esc(u.email)}</option>`).join('');
+    // Reset selection state
+    selectedCustomerId = null;
+    const selectedCustEl = document.getElementById('selected-customer');
+    if (selectedCustEl) selectedCustEl.classList.remove('visible');
+  }
+
+  // Handle dropdown change
+  const estCustSelect = document.getElementById('estimate-customer-select');
+  const selectedCustEl = document.getElementById('selected-customer');
+
+  if (estCustSelect) {
+    estCustSelect.addEventListener('change', function() {
+      const userId = this.value;
+      if (!userId) {
+        selectedCustomerId = null;
+        if (selectedCustEl) selectedCustEl.classList.remove('visible');
+        document.getElementById('estimate-vehicle').value = '';
+        return;
+      }
+      const user = getUsers().find(u => u.id === userId);
+      if (user) {
+        selectedCustomerId = user.id;
+        if (selectedCustEl) {
+          selectedCustEl.textContent = user.name + ' — ' + user.email;
+          selectedCustEl.classList.add('visible');
+        }
+        const vehicleInput = document.getElementById('estimate-vehicle');
+        if (vehicleInput && !vehicleInput.value && user.vehicle) {
+          vehicleInput.value = user.vehicle;
+        }
+      }
+    });
+  }
+
   // ---- ADD CUSTOMER ----
   const addCustBtn = document.getElementById('add-customer-btn');
   const addCustForm = document.getElementById('add-customer-form');
   const saveCustBtn = document.getElementById('save-customer-btn');
   const cancelCustBtn = document.getElementById('cancel-customer-btn');
 
-  if (addCustBtn) addCustBtn.addEventListener('click', () => { addCustForm.style.display = ''; });
+  if (addCustBtn) addCustBtn.addEventListener('click', () => {
+    addCustForm.style.display = '';
+    const msgEl = document.getElementById('customer-save-msg');
+    if (msgEl) msgEl.style.display = 'none';
+  });
   if (cancelCustBtn) cancelCustBtn.addEventListener('click', () => { addCustForm.style.display = 'none'; });
 
   if (saveCustBtn) saveCustBtn.addEventListener('click', () => {
     const name = document.getElementById('cust-name').value.trim();
     const email = document.getElementById('cust-email').value.trim();
     const phone = document.getElementById('cust-phone').value.trim();
+    const address = document.getElementById('cust-address').value.trim();
     const vehicle = document.getElementById('cust-vehicle').value.trim();
-    const password = document.getElementById('cust-password').value.trim();
+    const msgEl = document.getElementById('customer-save-msg');
 
-    if (!name || !email || !password) return;
+    if (!name || !email) {
+      if (msgEl) {
+        msgEl.style.display = '';
+        msgEl.style.background = 'rgba(241,70,104,0.1)';
+        msgEl.style.borderColor = 'rgba(241,70,104,0.3)';
+        msgEl.style.color = '#f14668';
+        msgEl.textContent = 'Name and email are required.';
+      }
+      return;
+    }
 
     const users = getUsers();
     if (users.find(u => u.email.toLowerCase() === email.toLowerCase())) {
-      return; // email already exists
+      if (msgEl) {
+        msgEl.style.display = '';
+        msgEl.style.background = 'rgba(241,70,104,0.1)';
+        msgEl.style.borderColor = 'rgba(241,70,104,0.3)';
+        msgEl.style.color = '#f14668';
+        msgEl.textContent = 'A customer with this email already exists.';
+      }
+      return;
     }
 
-    users.push({ id: generateId(), role: 'customer', name, email, phone, vehicle, password });
+    const generatedPassword = generatePassword();
+    const newUser = {
+      id: generateId(),
+      role: 'customer',
+      name,
+      email,
+      phone,
+      address,
+      vehicle,
+      password: generatedPassword,
+      emailValidated: true // In production this would be false until email confirmed
+    };
+    users.push(newUser);
     saveUsers(users);
-    addCustForm.style.display = 'none';
+
+    // Clear form
     document.getElementById('cust-name').value = '';
     document.getElementById('cust-email').value = '';
     document.getElementById('cust-phone').value = '';
+    document.getElementById('cust-address').value = '';
     document.getElementById('cust-vehicle').value = '';
-    document.getElementById('cust-password').value = '';
+
+    // Show confirmation
+    if (msgEl) {
+      msgEl.style.display = '';
+      msgEl.style.background = 'rgba(72,199,142,0.1)';
+      msgEl.style.borderColor = 'rgba(72,199,142,0.3)';
+      msgEl.style.color = '#48c78e';
+      msgEl.innerHTML = `
+        <strong>Customer created!</strong><br>
+        A validation email has been sent to <strong>${esc(email)}</strong>.<br>
+        Once validated, the customer can log in with:<br>
+        <strong>Username:</strong> ${esc(email)}<br>
+        <strong>Temporary password:</strong> <code style="background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;">${esc(generatedPassword)}</code><br>
+        <em style="font-size:0.8rem;">Please share this password securely with the customer.</em>
+      `;
+    }
+
     renderCustomers();
+    populateCustomerDropdown();
   });
 
   // ---- ESTIMATE CREATION ----
   let selectedCustomerId = null;
-
-  // Customer search for estimate assignment
-  const estCustSearch = document.getElementById('estimate-customer-search');
-  const searchResultsEl = document.getElementById('customer-search-results');
-  const selectedCustEl = document.getElementById('selected-customer');
-
-  if (estCustSearch) {
-    estCustSearch.addEventListener('input', function() {
-      const q = this.value.trim().toLowerCase();
-      if (q.length < 2) { searchResultsEl.innerHTML = ''; return; }
-      const users = getUsers().filter(u => u.role === 'customer');
-      const matches = users.filter(u =>
-        u.name.toLowerCase().includes(q) ||
-        u.email.toLowerCase().includes(q) ||
-        (u.phone || '').includes(q)
-      ).slice(0, 5);
-
-      if (!matches.length) {
-        searchResultsEl.innerHTML = '<div class="search-results-dropdown"><div class="search-result-item"><span class="detail">No customers found</span></div></div>';
-        return;
-      }
-
-      searchResultsEl.innerHTML = '<div class="search-results-dropdown">' + matches.map(u => `
-        <div class="search-result-item" data-id="${u.id}">
-          <span class="name">${esc(u.name)}</span>
-          <span class="detail">${esc(u.email)} &bull; ${esc(u.phone || '')}</span>
-        </div>
-      `).join('') + '</div>';
-
-      searchResultsEl.querySelectorAll('.search-result-item').forEach(item => {
-        item.addEventListener('click', () => {
-          const user = users.find(u => u.id === item.dataset.id);
-          if (user) {
-            selectedCustomerId = user.id;
-            estCustSearch.value = user.name;
-            searchResultsEl.innerHTML = '';
-            selectedCustEl.textContent = user.name + ' — ' + user.email;
-            selectedCustEl.classList.add('visible');
-            // Auto-fill vehicle if available
-            const vehicleInput = document.getElementById('estimate-vehicle');
-            if (vehicleInput && !vehicleInput.value && user.vehicle) {
-              vehicleInput.value = user.vehicle;
-            }
-          }
-        });
-      });
-    });
-  }
 
   // Line item management
   function addLineItem(containerId, type) {
@@ -453,12 +544,12 @@
     document.getElementById('labor-list').innerHTML = '';
     document.getElementById('other-list').innerHTML = '';
     document.getElementById('estimate-total').textContent = '$0.00';
-    estCustSearch.value = '';
-    selectedCustEl.classList.remove('visible');
+    if (estCustSelect) estCustSelect.value = '';
+    if (selectedCustEl) selectedCustEl.classList.remove('visible');
     selectedCustomerId = null;
 
     // Switch to estimates tab
-    document.querySelector('[data-panel="admin-estimates"]').click();
+    document.querySelector('#admin-section [data-panel="admin-estimates"]').click();
     renderAdminEstimates();
   });
 
@@ -539,11 +630,11 @@
       html += `<button class="btn btn-approve" id="approve-btn">Approve Estimate</button>`;
       html += `<button class="btn btn-deny" id="deny-btn">Deny Estimate</button>`;
     }
-    if (viewRole === 'admin' && est.status === 'approved') {
-      html += `<button class="btn btn-download" id="download-btn">Download Estimate</button>`;
-    }
     if (viewRole === 'admin') {
       html += `<button class="btn btn-download" id="download-btn-any">Download PDF</button>`;
+    }
+    if (viewRole === 'customer') {
+      html += `<button class="btn btn-download" id="download-btn-cust">Download PDF</button>`;
     }
     html += '</div>';
 
@@ -564,6 +655,12 @@
 
       estimates[idx].comments = estimates[idx].comments || [];
       estimates[idx].comments.push({ author: session.name, text, date: new Date().toISOString() });
+
+      // If customer is commenting on a pending estimate, update status to 'commented'
+      if (session.role === 'customer' && estimates[idx].status === 'pending') {
+        estimates[idx].status = 'commented';
+      }
+
       saveEstimates(estimates);
       openEstimateModal(estimateId, viewRole);
     });
@@ -593,9 +690,8 @@
     });
 
     // Download
-    const downloadHandler = () => downloadEstimate(estimateId);
-    document.getElementById('download-btn')?.addEventListener('click', downloadHandler);
-    document.getElementById('download-btn-any')?.addEventListener('click', downloadHandler);
+    document.getElementById('download-btn-any')?.addEventListener('click', () => downloadEstimate(estimateId));
+    document.getElementById('download-btn-cust')?.addEventListener('click', () => downloadEstimate(estimateId));
   }
 
   // Close modal
@@ -608,6 +704,7 @@
     document.body.style.overflow = '';
     const session = getSession();
     if (session && session.role === 'admin') renderAdminEstimates();
+    if (session && session.role === 'customer') renderCustomerEstimates(session.id);
   }
 
   // ---- DOWNLOAD ESTIMATE ----
@@ -620,15 +717,19 @@
     const cust = users.find(u => u.id === est.customerId);
     const totals = calcEstimateTotal(est);
 
+    const logoUrl = 'https://elevationjeeps.com/cdn/shop/files/Elevation_Jeeps_Logo_Colored_Lockup_Jeeps_Filter_copy_500x.png';
+
     // Build a printable HTML document
     const printHtml = `<!DOCTYPE html>
 <html><head><meta charset="UTF-8"><title>Estimate - ${esc(est.title)}</title>
 <style>
   body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 40px; color: #333; }
-  h1 { color: #263240; font-size: 24px; margin-bottom: 4px; }
-  .header { display: flex; justify-content: space-between; margin-bottom: 30px; border-bottom: 3px solid #5baab7; padding-bottom: 20px; }
-  .company { font-size: 14px; color: #666; }
-  .company strong { color: #263240; font-size: 18px; display: block; margin-bottom: 4px; }
+  .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 30px; border-bottom: 3px solid #5baab7; padding-bottom: 20px; }
+  .header-left img { height: 70px; display: block; margin-bottom: 8px; }
+  .header-left h1 { color: #263240; font-size: 22px; margin: 0 0 4px; }
+  .header-left .status { display: inline-block; padding: 3px 12px; border-radius: 12px; font-size: 11px; font-weight: bold; text-transform: uppercase; }
+  .company { font-size: 13px; color: #666; text-align: right; }
+  .company strong { color: #263240; font-size: 16px; display: block; margin-bottom: 4px; }
   .meta { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
   .meta-item { font-size: 13px; }
   .meta-item strong { display: block; font-size: 11px; text-transform: uppercase; color: #5baab7; letter-spacing: 1px; margin-bottom: 2px; }
@@ -639,21 +740,24 @@
   .summary { background: #f8f9fa; padding: 16px 20px; border-radius: 6px; margin-top: 20px; }
   .summary-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 13px; }
   .summary-row.total { border-top: 2px solid #5baab7; padding-top: 10px; margin-top: 8px; font-size: 18px; font-weight: bold; color: #263240; }
-  .status { display: inline-block; padding: 3px 12px; border-radius: 12px; font-size: 11px; font-weight: bold; text-transform: uppercase; }
   .status-pending { background: #fff3cd; color: #856404; }
   .status-approved { background: #d4edda; color: #155724; }
   .status-denied { background: #f8d7da; color: #721c24; }
-  .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd; font-size: 11px; color: #999; text-align: center; }
+  .status-commented { background: #cff4fc; color: #0c5460; }
+  .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd; font-size: 11px; color: #666; }
+  .footer .disclaimer { font-style: italic; margin-bottom: 8px; }
+  .footer .contact { color: #999; text-align: center; }
   @media print { body { padding: 20px; } }
 </style></head><body>
   <div class="header">
-    <div>
+    <div class="header-left">
+      <img src="${logoUrl}" alt="Elevation Jeeps Logo" onerror="this.style.display='none'">
       <h1>${esc(est.title)}</h1>
       <span class="status status-${est.status}">${est.status.toUpperCase()}</span>
     </div>
     <div class="company">
       <strong>Elevation Jeeps</strong>
-      17655 Katy Fwy<br>Houston, TX 77094<br>(832) 974-4133
+      17655 Katy Fwy<br>Houston, TX 77094<br>(832) 974-4133<br>sales@elevationjeeps.com
     </div>
   </div>
   <div class="meta">
@@ -671,7 +775,10 @@
     <div class="summary-row"><span>Tax (${est.taxRate}%)</span><span>${formatCurrency(totals.tax)}</span></div>
     <div class="summary-row total"><span>Total</span><span>${formatCurrency(totals.total)}</span></div>
   </div>
-  <div class="footer">Elevation Jeeps &mdash; Quality. Integrity. Transparency. &mdash; elevationjeeps.com</div>
+  <div class="footer">
+    <p class="disclaimer"><strong>Please Note:</strong> This is an estimate. During the work being done there could be additional changes — these will always be communicated and agreed upon before any additional work is performed.</p>
+    <p class="contact">Elevation Jeeps &mdash; Quality. Integrity. Transparency. &mdash; elevationjeeps.com</p>
+  </div>
 </body></html>`;
 
     // Open in new window for print/save as PDF
@@ -680,6 +787,92 @@
     printWin.document.close();
     printWin.focus();
     setTimeout(() => printWin.print(), 500);
+  }
+
+  // ---- CUSTOMER PROFILE ----
+  function renderCustomerProfile(userId) {
+    const users = getUsers();
+    const user = users.find(u => u.id === userId);
+    if (!user) return;
+
+    const profileEl = document.getElementById('customer-profile-info');
+    if (!profileEl) return;
+
+    profileEl.innerHTML = `
+      <div class="profile-grid">
+        <div class="profile-item">
+          <strong>Full Name</strong>
+          <span>${esc(user.name || '—')}</span>
+        </div>
+        <div class="profile-item">
+          <strong>Email Address</strong>
+          <span>${esc(user.email || '—')}</span>
+        </div>
+        <div class="profile-item">
+          <strong>Phone Number</strong>
+          <span>${esc(user.phone || '—')}</span>
+        </div>
+        <div class="profile-item">
+          <strong>Address</strong>
+          <span>${esc(user.address || '—')}</span>
+        </div>
+        <div class="profile-item" style="grid-column: 1 / -1;">
+          <strong>Vehicle</strong>
+          <span>${esc(user.vehicle || '—')}</span>
+        </div>
+      </div>
+      <p style="margin-top: 20px; font-size: 0.85rem; color: var(--color-text-muted);">To update your profile information, please contact Elevation Jeeps directly.</p>
+    `;
+  }
+
+  // ---- CHANGE PASSWORD ----
+  const changePwdBtn = document.getElementById('change-password-btn');
+  if (changePwdBtn) {
+    changePwdBtn.addEventListener('click', () => {
+      const currentPwd = document.getElementById('pwd-current').value;
+      const newPwd = document.getElementById('pwd-new').value;
+      const confirmPwd = document.getElementById('pwd-confirm').value;
+      const msgEl = document.getElementById('password-msg');
+
+      msgEl.classList.remove('visible');
+      msgEl.style.color = '';
+
+      const session = getSession();
+      if (!session) return;
+
+      const users = getUsers();
+      const userIdx = users.findIndex(u => u.id === session.id);
+      if (userIdx === -1) return;
+
+      if (users[userIdx].password !== currentPwd) {
+        msgEl.textContent = 'Current password is incorrect.';
+        msgEl.classList.add('visible');
+        return;
+      }
+
+      if (newPwd.length < 6) {
+        msgEl.textContent = 'New password must be at least 6 characters.';
+        msgEl.classList.add('visible');
+        return;
+      }
+
+      if (newPwd !== confirmPwd) {
+        msgEl.textContent = 'New passwords do not match.';
+        msgEl.classList.add('visible');
+        return;
+      }
+
+      users[userIdx].password = newPwd;
+      saveUsers(users);
+
+      document.getElementById('pwd-current').value = '';
+      document.getElementById('pwd-new').value = '';
+      document.getElementById('pwd-confirm').value = '';
+
+      msgEl.textContent = 'Password updated successfully!';
+      msgEl.style.color = '#48c78e';
+      msgEl.classList.add('visible');
+    });
   }
 
   // ---- UTILITY ----
@@ -698,10 +891,12 @@
       showSection('admin');
       renderAdminEstimates();
       renderCustomers();
+      populateCustomerDropdown();
     } else {
       showSection('customer');
       els.customerName.textContent = session.name;
       renderCustomerEstimates(session.id);
+      renderCustomerProfile(session.id);
     }
   } else {
     showSection('login');
