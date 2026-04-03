@@ -214,8 +214,26 @@
   });
 
   // ---- RENDER ADMIN ESTIMATES ----
+  function renderEstimateSummary() {
+    const all = getEstimates();
+    const counts = { total: all.length, pending: 0, approved: 0, denied: 0, commented: 0 };
+    all.forEach(e => { if (counts.hasOwnProperty(e.status)) counts[e.status]++; });
+    const summaryEl = document.getElementById('estimates-summary');
+    if (summaryEl) {
+      summaryEl.innerHTML = `
+        <div class="summary-stat"><span class="summary-num">${counts.total}</span><span class="summary-label">Total</span></div>
+        <div class="summary-stat"><span class="summary-num stat-pending">${counts.pending}</span><span class="summary-label">Pending</span></div>
+        <div class="summary-stat"><span class="summary-num stat-approved">${counts.approved}</span><span class="summary-label">Approved</span></div>
+        <div class="summary-stat"><span class="summary-num stat-denied">${counts.denied}</span><span class="summary-label">Denied</span></div>
+        <div class="summary-stat"><span class="summary-num stat-commented">${counts.commented}</span><span class="summary-label">Commented</span></div>
+      `;
+    }
+  }
+
   function renderAdminEstimates() {
-    let estimates = getEstimates();
+    const allEstimates = getEstimates();
+    renderEstimateSummary();
+    let estimates = allEstimates;
     if (adminEstimatesFilter !== 'all') {
       estimates = estimates.filter(e => e.status === adminEstimatesFilter);
     }
@@ -293,7 +311,7 @@
       return;
     }
     els.customersList.innerHTML = filtered.map(u => `
-      <div class="customer-card">
+      <div class="customer-card" data-customer-id="${u.id}">
         <div class="customer-info">
           <h4>${esc(u.name)}</h4>
           <p>${esc(u.email)} &bull; ${esc(u.phone || 'No phone')} &bull; ${esc(u.vehicle || 'No vehicle')}</p>
@@ -302,8 +320,40 @@
             ${u.emailValidated ? '&#10003; Email validated' : '&#9888; Awaiting email validation'}
           </p>
         </div>
+        <div class="customer-card-actions">
+          ${!u.emailValidated ? `<button class="btn btn-primary btn-sm validate-email-btn" data-user-id="${u.id}">Simulate Validation</button>` : ''}
+        </div>
       </div>
     `).join('');
+
+    // Attach validate email handlers
+    els.customersList.querySelectorAll('.validate-email-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const userId = btn.dataset.userId;
+        const users = getUsers();
+        const idx = users.findIndex(u => u.id === userId);
+        if (idx === -1) return;
+        users[idx].emailValidated = true;
+        saveUsers(users);
+
+        // Show the generated password
+        const card = btn.closest('.customer-card');
+        const actionsDiv = card.querySelector('.customer-card-actions');
+        if (actionsDiv) {
+          actionsDiv.innerHTML = `<p style="color:#48c78e; font-size:0.85rem;">&#10003; Validated! Login: <strong>${esc(users[idx].email)}</strong> / <code style="background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;">${esc(users[idx].pendingPassword || users[idx].password)}</code></p>`;
+        }
+
+        // Update the status text
+        const statusP = card.querySelector('.customer-info p:last-of-type');
+        if (statusP) {
+          statusP.style.color = '#48c78e';
+          statusP.innerHTML = '&#10003; Email validated';
+        }
+
+        populateCustomerDropdown();
+      });
+    });
   }
 
   if (els.customerSearch) {
@@ -314,7 +364,7 @@
   function populateCustomerDropdown() {
     const select = document.getElementById('estimate-customer-select');
     if (!select) return;
-    const customers = getUsers().filter(u => u.role === 'customer');
+    const customers = getUsers().filter(u => u.role === 'customer' && u.emailValidated);
     select.innerHTML = '<option value="">— Select a customer —</option>' +
       customers.map(u => `<option value="${u.id}">${esc(u.name)} — ${esc(u.email)}</option>`).join('');
     // Reset selection state
@@ -405,7 +455,8 @@
       address,
       vehicle,
       password: generatedPassword,
-      emailValidated: true // In production this would be false until email confirmed
+      emailValidated: false,
+      pendingPassword: generatedPassword
     };
     users.push(newUser);
     saveUsers(users);
@@ -426,10 +477,11 @@
       msgEl.innerHTML = `
         <strong>Customer created!</strong><br>
         A validation email has been sent to <strong>${esc(email)}</strong>.<br>
-        Once validated, the customer can log in with:<br>
+        The customer must validate their email before they can log in.<br>
+        Once validated, their login credentials will be:<br>
         <strong>Username:</strong> ${esc(email)}<br>
         <strong>Temporary password:</strong> <code style="background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;">${esc(generatedPassword)}</code><br>
-        <em style="font-size:0.8rem;">Please share this password securely with the customer.</em>
+        <em style="font-size:0.8rem;">Please share this password securely with the customer after they validate their email.</em>
       `;
     }
 
@@ -987,7 +1039,8 @@
       address: '',
       vehicle: lead.vehicle || '',
       password: generatedPassword,
-      emailValidated: true, // In production this would be false until email confirmed
+      pendingPassword: generatedPassword,
+      emailValidated: false,
       marketingConsent: true
     };
     users.push(newUser);

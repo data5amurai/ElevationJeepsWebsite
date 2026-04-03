@@ -149,6 +149,54 @@
   color: var(--color-teal);
 }
 
+/* ---- ESTIMATES SUMMARY ---- */
+.estimates-summary {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.summary-stat {
+  background: var(--color-dark-card);
+  border: 1px solid rgba(91, 170, 183, 0.1);
+  border-radius: 8px;
+  padding: 14px 20px;
+  text-align: center;
+  flex: 1;
+  min-width: 100px;
+}
+
+.summary-num {
+  display: block;
+  font-family: var(--font-heading);
+  font-size: 1.8rem;
+  color: var(--color-white);
+  letter-spacing: 1px;
+}
+
+.summary-num.stat-pending { color: #e2b04a; }
+.summary-num.stat-approved { color: #48c78e; }
+.summary-num.stat-denied { color: #f14668; }
+.summary-num.stat-commented { color: var(--color-teal); }
+
+.summary-label {
+  display: block;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+
+/* ---- CUSTOMER CARD ACTIONS ---- */
+.customer-card-actions {
+  flex-shrink: 0;
+  margin-left: 16px;
+  display: flex;
+  align-items: center;
+}
+
 /* ---- ESTIMATE CARDS ---- */
 .estimates-list {
   display: grid;
@@ -791,6 +839,29 @@ select option {
 
   .workflow-arrow {
     transform: rotate(90deg);
+  }
+
+  .estimates-summary {
+    gap: 8px;
+  }
+
+  .summary-stat {
+    min-width: 60px;
+    padding: 10px 12px;
+  }
+
+  .summary-num {
+    font-size: 1.4rem;
+  }
+
+  .customer-card {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .customer-card-actions {
+    margin-left: 0;
   }
 }
 
