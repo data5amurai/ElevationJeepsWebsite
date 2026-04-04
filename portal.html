@@ -105,16 +105,16 @@
 
       <!-- Admin Tabs -->
       <div class="portal-tabs">
-        <button class="portal-tab active" data-panel="admin-estimates">Estimates</button>
+        <button class="portal-tab active" data-panel="admin-estimates">Open Estimates</button>
         <button class="portal-tab" data-panel="admin-customers">Customers</button>
-        <button class="portal-tab" data-panel="admin-leads">Leads</button>
+        <button class="portal-tab" data-panel="admin-leads">Contacts</button>
         <button class="portal-tab" data-panel="admin-create">New Estimate</button>
       </div>
 
       <!-- Estimates List -->
       <div class="portal-panel active" id="admin-estimates">
         <div class="panel-header">
-          <h3>All Estimates</h3>
+          <h3>Open Estimates</h3>
         </div>
         <div id="estimates-summary" class="estimates-summary"></div>
         <div class="estimates-filter">
@@ -123,6 +123,7 @@
           <button class="filter-btn" data-filter="approved">Approved</button>
           <button class="filter-btn" data-filter="denied">Denied</button>
           <button class="filter-btn" data-filter="commented">Commented</button>
+          <button class="filter-btn" data-filter="closed">Closed</button>
         </div>
         <div id="admin-estimates-list" class="estimates-list"></div>
       </div>
@@ -175,11 +176,11 @@
       <!-- Leads -->
       <div class="portal-panel" id="admin-leads">
         <div class="panel-header">
-          <h3>Leads</h3>
+          <h3>Contacts</h3>
         </div>
-        <p style="color: var(--color-text-muted); margin-bottom: 16px; font-size: 0.9rem;">Leads are generated from the Contact Us page. Convert a lead to a customer to begin the verification process.</p>
+        <p style="color: var(--color-text-muted); margin-bottom: 16px; font-size: 0.9rem;">Leads are generated from the Contact Us page. Convert a lead to a customer to begin the email verification process. Convert only when creating the first estimate.</p>
         <div class="form-group" style="margin-bottom: 24px;">
-          <input type="text" id="leads-search" placeholder="Search leads by name, email, or phone...">
+          <input type="text" id="leads-search" placeholder="Search contacts by name, email, or phone...">
         </div>
         <div id="leads-list" class="customers-list"></div>
       </div>

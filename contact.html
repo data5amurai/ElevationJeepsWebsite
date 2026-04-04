@@ -224,11 +224,27 @@
   <script>
     function handleSubmit(e) {
       e.preventDefault();
+      var email = document.getElementById('email').value.trim();
+      var status = document.getElementById('form-status');
+
+      // Check if this email already belongs to an existing customer
+      var users = [];
+      try { users = JSON.parse(localStorage.getItem('ej_portal_users')) || []; } catch(ex) { users = []; }
+      var existingCustomer = users.find(function(u) {
+        return u.role === 'customer' && u.email.toLowerCase() === email.toLowerCase();
+      });
+      if (existingCustomer) {
+        status.style.display = 'block';
+        status.style.color = '#f14668';
+        status.textContent = 'This email is already associated with an existing customer account. Please log in to the Customer Portal instead.';
+        return false;
+      }
+
       // Store the submission as a lead
       var lead = {
         id: 'lead-' + Date.now() + '-' + Math.random().toString(36).substr(2, 6),
         name: document.getElementById('name').value.trim(),
-        email: document.getElementById('email').value.trim(),
+        email: email,
         phone: document.getElementById('phone').value.trim(),
         vehicle: document.getElementById('vehicle').value.trim(),
         service: document.getElementById('service').value,
@@ -241,7 +257,6 @@
       leads.push(lead);
       localStorage.setItem('ej_portal_leads', JSON.stringify(leads));
 
-      var status = document.getElementById('form-status');
       status.style.display = 'block';
       status.style.color = 'var(--color-teal)';
       status.textContent = 'Thank you! Your message has been received. We\'ll get back to you shortly.';

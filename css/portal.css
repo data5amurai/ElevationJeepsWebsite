@@ -179,6 +179,7 @@
 .summary-num.stat-approved { color: #48c78e; }
 .summary-num.stat-denied { color: #f14668; }
 .summary-num.stat-commented { color: var(--color-teal); }
+.summary-num.stat-closed { color: #999; }
 
 .summary-label {
   display: block;
@@ -264,6 +265,12 @@
   background: rgba(91, 170, 183, 0.15);
   color: var(--color-teal);
   border: 1px solid rgba(91, 170, 183, 0.3);
+}
+
+.status-closed {
+  background: rgba(128, 128, 128, 0.15);
+  color: #999;
+  border: 1px solid rgba(128, 128, 128, 0.3);
 }
 
 .estimate-card-meta {
@@ -664,6 +671,30 @@
 .btn-deny:hover {
   background: #f14668;
   color: white;
+  transform: translateY(-2px);
+}
+
+.btn-close-estimate {
+  background: transparent;
+  color: #999;
+  border-color: #999;
+}
+
+.btn-close-estimate:hover {
+  background: #999;
+  color: var(--color-dark);
+  transform: translateY(-2px);
+}
+
+.btn-reopen-estimate {
+  background: transparent;
+  color: #e2b04a;
+  border-color: #e2b04a;
+}
+
+.btn-reopen-estimate:hover {
+  background: #e2b04a;
+  color: var(--color-dark);
   transform: translateY(-2px);
 }
 

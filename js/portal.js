@@ -216,16 +216,18 @@
   // ---- RENDER ADMIN ESTIMATES ----
   function renderEstimateSummary() {
     const all = getEstimates();
-    const counts = { total: all.length, pending: 0, approved: 0, denied: 0, commented: 0 };
+    const openEstimates = all.filter(e => e.status !== 'closed');
+    const counts = { total: openEstimates.length, pending: 0, approved: 0, denied: 0, commented: 0, closed: 0 };
     all.forEach(e => { if (counts.hasOwnProperty(e.status)) counts[e.status]++; });
     const summaryEl = document.getElementById('estimates-summary');
     if (summaryEl) {
       summaryEl.innerHTML = `
-        <div class="summary-stat"><span class="summary-num">${counts.total}</span><span class="summary-label">Total</span></div>
+        <div class="summary-stat"><span class="summary-num">${counts.total}</span><span class="summary-label">Open</span></div>
         <div class="summary-stat"><span class="summary-num stat-pending">${counts.pending}</span><span class="summary-label">Pending</span></div>
         <div class="summary-stat"><span class="summary-num stat-approved">${counts.approved}</span><span class="summary-label">Approved</span></div>
         <div class="summary-stat"><span class="summary-num stat-denied">${counts.denied}</span><span class="summary-label">Denied</span></div>
         <div class="summary-stat"><span class="summary-num stat-commented">${counts.commented}</span><span class="summary-label">Commented</span></div>
+        <div class="summary-stat"><span class="summary-num stat-closed">${counts.closed}</span><span class="summary-label">Closed</span></div>
       `;
     }
   }
@@ -313,8 +315,8 @@
     els.customersList.innerHTML = filtered.map(u => `
       <div class="customer-card" data-customer-id="${u.id}">
         <div class="customer-info">
-          <h4>${esc(u.name)}</h4>
-          <p>${esc(u.email)} &bull; ${esc(u.phone || 'No phone')} &bull; ${esc(u.vehicle || 'No vehicle')}</p>
+          <h4>${esc(u.email)}</h4>
+          <p>${esc(u.name)} &bull; ${esc(u.phone || 'No phone')} &bull; ${esc(u.vehicle || 'No vehicle')}</p>
           ${u.address ? `<p style="font-size:0.85rem; color: var(--color-text-muted);">${esc(u.address)}</p>` : ''}
           <p style="font-size: 0.8rem; color: ${u.emailValidated ? '#48c78e' : '#e2b04a'};">
             ${u.emailValidated ? '&#10003; Email validated' : '&#9888; Awaiting email validation'}
@@ -366,7 +368,7 @@
     if (!select) return;
     const customers = getUsers().filter(u => u.role === 'customer' && u.emailValidated);
     select.innerHTML = '<option value="">— Select a customer —</option>' +
-      customers.map(u => `<option value="${u.id}">${esc(u.name)} — ${esc(u.email)}</option>`).join('');
+      customers.map(u => `<option value="${u.id}">${esc(u.email)} — ${esc(u.name)}</option>`).join('');
     // Reset selection state
     selectedCustomerId = null;
     const selectedCustEl = document.getElementById('selected-customer');
@@ -390,11 +392,11 @@
       if (user) {
         selectedCustomerId = user.id;
         if (selectedCustEl) {
-          selectedCustEl.textContent = user.name + ' — ' + user.email;
+          selectedCustEl.textContent = user.email + ' — ' + user.name;
           selectedCustEl.classList.add('visible');
         }
         const vehicleInput = document.getElementById('estimate-vehicle');
-        if (vehicleInput && !vehicleInput.value && user.vehicle) {
+        if (vehicleInput && user.vehicle) {
           vehicleInput.value = user.vehicle;
         }
       }
@@ -688,6 +690,11 @@
       html += `<button class="btn btn-deny" id="deny-btn">Deny Estimate</button>`;
     }
     if (viewRole === 'admin') {
+      if (est.status !== 'closed') {
+        html += `<button class="btn btn-close-estimate" id="close-estimate-btn">Close Estimate</button>`;
+      } else {
+        html += `<button class="btn btn-reopen-estimate" id="reopen-estimate-btn">Reopen Estimate</button>`;
+      }
       html += `<button class="btn btn-download" id="download-btn-any">Download PDF</button>`;
     }
     if (viewRole === 'customer') {
@@ -746,6 +753,30 @@
       renderCustomerEstimates(getSession().id);
     });
 
+    // Close estimate
+    document.getElementById('close-estimate-btn')?.addEventListener('click', () => {
+      const estimates = getEstimates();
+      const idx = estimates.findIndex(e => e.id === estimateId);
+      if (idx === -1) return;
+      estimates[idx].status = 'closed';
+      estimates[idx].comments.push({ author: 'Elevation Jeeps', text: 'Estimate closed — physical work has started.', date: new Date().toISOString() });
+      saveEstimates(estimates);
+      openEstimateModal(estimateId, viewRole);
+      renderAdminEstimates();
+    });
+
+    // Reopen estimate
+    document.getElementById('reopen-estimate-btn')?.addEventListener('click', () => {
+      const estimates = getEstimates();
+      const idx = estimates.findIndex(e => e.id === estimateId);
+      if (idx === -1) return;
+      estimates[idx].status = 'pending';
+      estimates[idx].comments.push({ author: 'Elevation Jeeps', text: 'Estimate reopened.', date: new Date().toISOString() });
+      saveEstimates(estimates);
+      openEstimateModal(estimateId, viewRole);
+      renderAdminEstimates();
+    });
+
     // Download
     document.getElementById('download-btn-any')?.addEventListener('click', () => downloadEstimate(estimateId));
     document.getElementById('download-btn-cust')?.addEventListener('click', () => downloadEstimate(estimateId));
@@ -801,6 +832,7 @@
   .status-approved { background: #d4edda; color: #155724; }
   .status-denied { background: #f8d7da; color: #721c24; }
   .status-commented { background: #cff4fc; color: #0c5460; }
+  .status-closed { background: #e2e3e5; color: #6c757d; }
   .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd; font-size: 11px; color: #666; }
   .footer .disclaimer { font-style: italic; margin-bottom: 8px; }
   .footer .contact { color: #999; text-align: center; }
@@ -981,7 +1013,7 @@
     }
 
     if (!filtered.length) {
-      leadsListEl.innerHTML = '<div class="empty-state"><p>No leads found. Leads are created when visitors submit the Contact Us form.</p></div>';
+      leadsListEl.innerHTML = '<div class="empty-state"><p>No contacts found. Contacts are created when visitors submit the Contact Us form.</p></div>';
       return;
     }
 
@@ -1159,6 +1191,18 @@
   } else {
     showSection('login');
   }
+
+  // ---- AUTO-LOGOUT ON LEAVE ----
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden' && getSession()) {
+      clearSession();
+    }
+  });
+  window.addEventListener('beforeunload', () => {
+    if (getSession()) {
+      clearSession();
+    }
+  });
 
   // Force fade-ins visible
   document.querySelectorAll('.fade-in').forEach(el => el.classList.add('visible'));
