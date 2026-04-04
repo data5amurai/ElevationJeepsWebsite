@@ -64,9 +64,12 @@
   function saveEstimates(estimates) { setStore(STORE_KEYS.estimates, estimates); }
   function getLeads() { return getStore(STORE_KEYS.leads) || []; }
   function saveLeads(leads) { setStore(STORE_KEYS.leads, leads); }
-  function getSession() { return getStore(STORE_KEYS.session); }
-  function setSession(user) { setStore(STORE_KEYS.session, user); }
-  function clearSession() { localStorage.removeItem(STORE_KEYS.session); }
+  function getSession() {
+    try { return JSON.parse(sessionStorage.getItem(STORE_KEYS.session)) || null; }
+    catch { return null; }
+  }
+  function setSession(user) { sessionStorage.setItem(STORE_KEYS.session, JSON.stringify(user)); }
+  function clearSession() { sessionStorage.removeItem(STORE_KEYS.session); }
 
   function generateId() { return 'id-' + Date.now() + '-' + Math.random().toString(36).substr(2, 6); }
 
@@ -1193,16 +1196,9 @@
   }
 
   // ---- AUTO-LOGOUT ON LEAVE ----
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'hidden' && getSession()) {
-      clearSession();
-    }
-  });
-  window.addEventListener('beforeunload', () => {
-    if (getSession()) {
-      clearSession();
-    }
-  });
+  // Session stored in sessionStorage: automatically cleared when tab/browser closes.
+  // No event listeners needed — navigating between site pages preserves session,
+  // but closing the tab or browser logs the user out.
 
   // Force fade-ins visible
   document.querySelectorAll('.fade-in').forEach(el => el.classList.add('visible'));
