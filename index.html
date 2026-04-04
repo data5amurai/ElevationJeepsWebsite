@@ -40,12 +40,12 @@
   <section class="hero">
     <div class="hero-bg" style="background-image: url('https://elevationjeeps.com/cdn/shop/files/IMG_E1857_1728x.jpg')"></div>
     <div class="hero-content">
-      <h1><span class="highlight">Elevation</span> Jeeps</h1>
-      <p class="tagline">Drive The Experience!</p>
-      <p style="color: var(--color-text-muted); margin-bottom: 36px; font-size: 1.05rem;">
+      <h1 class="hero-fade-up"><span class="highlight">Elevation</span> Jeeps</h1>
+      <p class="tagline hero-fade-up hero-fade-up-delay-1">Drive The Experience!</p>
+      <p class="hero-fade-up hero-fade-up-delay-2" style="color: var(--color-text-muted); margin-bottom: 36px; font-size: 1.05rem;">
         Houston's home for vehicle customization, expert service, and a community that lives for the adventure.
       </p>
-      <div class="btn-group">
+      <div class="btn-group hero-fade-up hero-fade-up-delay-3">
         <a href="services.html" class="btn btn-primary">Explore Services</a>
         <a href="contact.html" class="btn btn-outline">Schedule Service</a>
       </div>
@@ -62,22 +62,22 @@
       </div>
       <div class="grid-4">
         <div class="icon-card fade-in fade-in-delay-1">
-          <span class="icon">&#9881;</span>
+          <span class="icon"><i data-lucide="wrench"></i></span>
           <h3>Expert Service</h3>
           <p>Scheduled maintenance, engine work, and repairs by mechanics with years of automotive experience.</p>
         </div>
         <div class="icon-card fade-in fade-in-delay-2">
-          <span class="icon">&#9650;</span>
+          <span class="icon"><i data-lucide="arrow-up-from-line"></i></span>
           <h3>Suspension &amp; Lifts</h3>
           <p>Lift kits, shocks, sway links, and complete suspension systems for maximum trail performance.</p>
         </div>
         <div class="icon-card fade-in fade-in-delay-3">
-          <span class="icon">&#9728;</span>
+          <span class="icon"><i data-lucide="lightbulb"></i></span>
           <h3>Lighting &amp; Audio</h3>
           <p>LED headlights, off-road light bars, RGB systems, and premium audio upgrades.</p>
         </div>
         <div class="icon-card fade-in fade-in-delay-4">
-          <span class="icon">&#9733;</span>
+          <span class="icon"><i data-lucide="star"></i></span>
           <h3>Full Customization</h3>
           <p>Bumpers, winches, exhaust, cooling systems, fender flares, wheels, tires, and overlanding gear.</p>
         </div>
@@ -268,6 +268,8 @@
   </footer>
 
   <button class="back-to-top" aria-label="Back to top">&#9650;</button>
+  <script src="https://unpkg.com/lucide@latest"></script>
   <script src="js/main.js"></script>
+  <script>lucide.createIcons();</script>
 </body>
 </html>

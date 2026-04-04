@@ -361,6 +361,7 @@
 .line-item input:focus {
   outline: none;
   border-color: var(--color-teal);
+  box-shadow: 0 0 0 3px rgba(91, 170, 183, 0.15);
 }
 
 .line-item-remove {
@@ -640,6 +641,7 @@
 .add-comment input:focus {
   outline: none;
   border-color: var(--color-teal);
+  box-shadow: 0 0 0 3px rgba(91, 170, 183, 0.15);
 }
 
 /* ---- ACTION BUTTONS ---- */
@@ -847,7 +849,20 @@ select option {
   }
 
   .portal-tabs {
-    flex-direction: column;
+    flex-direction: row;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .portal-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .portal-tab {
+    white-space: nowrap;
+    flex: 0 0 auto;
+    min-width: fit-content;
   }
 
   .line-item {
@@ -866,8 +881,21 @@ select option {
   }
 
   .modal-content {
-    padding: 24px;
+    padding: 24px 24px 100px;
     margin: 20px;
+  }
+
+  .estimate-actions {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--color-dark-lighter);
+    padding: 16px 24px;
+    border-top: 1px solid rgba(91, 170, 183, 0.2);
+    margin-top: 0;
+    z-index: 9001;
+    justify-content: center;
   }
 
   .estimate-detail-meta {

@@ -13,7 +13,7 @@
   --color-white: #f5f5f5;
   --color-offwhite: #e8eaed;
   --color-text: #d1d5db;
-  --color-text-muted: #9ca3af;
+  --color-text-muted: #b0b7c0;
   --color-accent: #e2b04a;
   --font-heading: 'Bebas Neue', sans-serif;
   --font-body: 'Barlow', sans-serif;
@@ -159,6 +159,12 @@ h1, h2, h3, h4, h5, h6 {
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
+  animation: heroZoom 20s ease-in-out infinite alternate;
+}
+
+@keyframes heroZoom {
+  from { transform: scale(1); }
+  to { transform: scale(1.08); }
 }
 
 .hero-bg::after {
@@ -267,7 +273,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .section-header h2 {
   font-size: clamp(1.8rem, 4vw, 2.8rem);
-  margin-bottom: 16px;
+  margin-bottom: 24px;
 }
 
 .section-header .accent-line {
@@ -283,6 +289,7 @@ h1, h2, h3, h4, h5, h6 {
   margin: 0 auto;
   color: var(--color-text-muted);
   font-size: 1.05rem;
+  font-weight: 500;
 }
 
 /* ---- GRID LAYOUTS ---- */
@@ -358,7 +365,22 @@ h1, h2, h3, h4, h5, h6 {
 .icon-card .icon {
   font-size: 2.5rem;
   margin-bottom: 16px;
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-teal);
+}
+
+.icon-card .icon svg {
+  width: 40px;
+  height: 40px;
+  stroke: var(--color-teal);
+  stroke-width: 1.5;
+  transition: stroke var(--transition);
+}
+
+.icon-card:hover .icon svg {
+  stroke: var(--color-accent);
 }
 
 .icon-card h3 {
@@ -440,6 +462,7 @@ h1, h2, h3, h4, h5, h6 {
 .split-text p {
   margin-bottom: 16px;
   color: var(--color-text-muted);
+  font-weight: 500;
 }
 
 .split-text .btn {
@@ -506,7 +529,8 @@ h1, h2, h3, h4, h5, h6 {
 .footer {
   background: #1e2a34;
   padding: 60px 0 24px;
-  border-top: 1px solid rgba(91, 170, 183, 0.1);
+  border-top: 3px solid transparent;
+  border-image: linear-gradient(to right, var(--color-teal), var(--color-accent), var(--color-teal)) 1;
 }
 
 .footer-grid {
@@ -613,7 +637,7 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--color-white);
   font-family: var(--font-body);
   font-size: 0.95rem;
-  transition: border-color var(--transition);
+  transition: border-color var(--transition), box-shadow var(--transition);
 }
 
 .form-group input:focus,
@@ -621,6 +645,7 @@ h1, h2, h3, h4, h5, h6 {
 .form-group textarea:focus {
   outline: none;
   border-color: var(--color-teal);
+  box-shadow: 0 0 0 3px rgba(91, 170, 183, 0.15);
 }
 
 .form-group textarea {
@@ -877,6 +902,52 @@ h1, h2, h3, h4, h5, h6 {
   background: var(--color-teal-light);
   transform: translateY(-2px);
   box-shadow: 0 6px 24px rgba(91, 170, 183, 0.3);
+}
+
+/* ---- SERVICE ITEM LUCIDE ICONS ---- */
+.service-item .icon svg {
+  width: 20px;
+  height: 20px;
+  stroke: var(--color-teal);
+  stroke-width: 1.5;
+  flex-shrink: 0;
+}
+
+/* ---- GALLERY HOVER OVERLAY CAPTION ---- */
+.gallery-item .overlay span {
+  font-family: var(--font-heading);
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--color-white);
+}
+
+/* ---- ACCENT LINE SHIMMER ---- */
+.section-header .accent-line {
+  background: linear-gradient(90deg, var(--color-teal), var(--color-accent), var(--color-teal));
+  background-size: 200% 100%;
+  animation: shimmer 3s ease infinite;
+}
+
+@keyframes shimmer {
+  0%, 100% { background-position: 0% center; }
+  50% { background-position: 100% center; }
+}
+
+/* ---- CARD SUBTLE TOP GLOW ---- */
+.icon-card::before {
+  content: '';
+  display: block;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--color-teal), transparent);
+  opacity: 0;
+  transition: opacity var(--transition);
+  margin: -40px -24px 40px;
+  border-radius: 8px 8px 0 0;
+}
+
+.icon-card:hover::before {
+  opacity: 1;
 }
 
 /* ---- RESPONSIVE ---- */
