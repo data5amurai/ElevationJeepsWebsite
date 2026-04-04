@@ -693,6 +693,9 @@
       html += `<button class="btn btn-deny" id="deny-btn">Deny Estimate</button>`;
     }
     if (viewRole === 'admin') {
+      if (est.status === 'denied') {
+        html += `<button class="btn btn-edit-estimate" id="edit-estimate-btn">Edit Estimate</button>`;
+      }
       if (est.status !== 'closed') {
         html += `<button class="btn btn-close-estimate" id="close-estimate-btn">Close Estimate</button>`;
       } else {
@@ -780,9 +783,214 @@
       renderAdminEstimates();
     });
 
+    // Edit denied estimate
+    document.getElementById('edit-estimate-btn')?.addEventListener('click', () => {
+      openEditEstimateModal(estimateId);
+    });
+
     // Download
     document.getElementById('download-btn-any')?.addEventListener('click', () => downloadEstimate(estimateId));
     document.getElementById('download-btn-cust')?.addEventListener('click', () => downloadEstimate(estimateId));
+  }
+
+  // ---- EDIT ESTIMATE (DENIED) ----
+  function openEditEstimateModal(estimateId) {
+    const estimates = getEstimates();
+    const est = estimates.find(e => e.id === estimateId);
+    if (!est) return;
+
+    const users = getUsers();
+    const cust = users.find(u => u.id === est.customerId);
+
+    let html = `
+      <div class="estimate-detail-header">
+        <h2>Edit Estimate: ${esc(est.title)}</h2>
+        <div class="estimate-detail-meta">
+          <span>Customer: <strong>${cust ? esc(cust.name) : 'N/A'}</strong></span>
+          <span>Vehicle: <strong>${esc(est.vehicle)}</strong></span>
+          <span>Status: <span class="estimate-status status-denied">denied</span></span>
+        </div>
+      </div>
+      <p style="color: var(--color-text-muted); margin-bottom: 20px; font-size: 0.9rem;">Edit parts, labor, and other charges below. When saved, the estimate status will be set back to <strong style="color: #e2b04a;">pending</strong> for customer review.</p>
+    `;
+
+    // Editable parts
+    html += `<div class="line-items-section">
+      <div class="line-items-header">
+        <h4>Parts</h4>
+        <button class="btn btn-primary btn-sm" id="edit-add-part-btn">+ Add Part</button>
+      </div>
+      <div id="edit-parts-list">`;
+    (est.parts || []).forEach((p, i) => {
+      html += `<div class="line-item" data-type="part">
+        <input type="text" placeholder="Part description" class="li-desc" value="${esc(p.description)}">
+        <input type="number" placeholder="Qty" value="${p.qty}" min="1" class="li-qty">
+        <input type="number" placeholder="Price" step="0.01" min="0" class="li-price" value="${p.price}">
+        <button class="line-item-remove">&times;</button>
+      </div>`;
+    });
+    html += `</div></div>`;
+
+    // Editable labor
+    html += `<div class="line-items-section">
+      <div class="line-items-header">
+        <h4>Labor</h4>
+        <button class="btn btn-primary btn-sm" id="edit-add-labor-btn">+ Add Labor</button>
+      </div>
+      <div id="edit-labor-list">`;
+    (est.labor || []).forEach((l, i) => {
+      html += `<div class="line-item" data-type="labor">
+        <input type="text" placeholder="Labor description" class="li-desc" value="${esc(l.description)}">
+        <input type="number" placeholder="Hours" step="0.5" min="0" class="li-hours" value="${l.hours}">
+        <input type="number" placeholder="Rate/hr" step="0.01" min="0" class="li-rate" value="${l.rate}">
+        <button class="line-item-remove">&times;</button>
+      </div>`;
+    });
+    html += `</div></div>`;
+
+    // Editable other charges
+    html += `<div class="line-items-section">
+      <div class="line-items-header">
+        <h4>Other Charges</h4>
+        <button class="btn btn-primary btn-sm" id="edit-add-other-btn">+ Add Charge</button>
+      </div>
+      <div id="edit-other-list">`;
+    (est.other || []).forEach((o, i) => {
+      html += `<div class="line-item" data-type="other">
+        <input type="text" placeholder="Charge description" class="li-desc" value="${esc(o.description)}">
+        <input type="number" placeholder="Amount" step="0.01" min="0" class="li-amount" style="grid-column: span 2;" value="${o.amount}">
+        <button class="line-item-remove">&times;</button>
+      </div>`;
+    });
+    html += `</div></div>`;
+
+    // Tax rate
+    html += `<div class="form-group" style="margin-bottom: 16px;">
+      <label>Tax Rate (%)</label>
+      <input type="number" id="edit-tax-rate" value="${est.taxRate}" step="0.01" min="0" max="100" style="max-width: 120px;">
+    </div>`;
+
+    // Running total
+    html += `<div style="margin-bottom: 24px;">
+      <span style="color: var(--color-text-muted);">Estimated Total: </span>
+      <span id="edit-estimate-total" class="estimate-total" style="font-size: 1.5rem;">${formatCurrency(calcEstimateTotal(est).total)}</span>
+    </div>`;
+
+    // Save / Cancel buttons
+    html += `<div class="estimate-actions">
+      <button class="btn btn-approve" id="save-edit-estimate-btn">Save & Set to Pending</button>
+      <button class="btn btn-deny" id="cancel-edit-estimate-btn">Cancel</button>
+    </div>`;
+
+    els.estimateDetail.innerHTML = html;
+
+    // Wire up remove buttons and total recalc
+    function wireEditRemoveAndTotal() {
+      els.estimateDetail.querySelectorAll('.line-item-remove').forEach(btn => {
+        btn.addEventListener('click', () => { btn.closest('.line-item').remove(); updateEditTotal(); });
+      });
+      els.estimateDetail.querySelectorAll('input[type="number"]').forEach(inp => {
+        inp.addEventListener('input', updateEditTotal);
+      });
+    }
+    wireEditRemoveAndTotal();
+
+    function updateEditTotal() {
+      let subtotal = 0;
+      document.querySelectorAll('#edit-parts-list .line-item').forEach(li => {
+        subtotal += (parseFloat(li.querySelector('.li-qty')?.value) || 0) * (parseFloat(li.querySelector('.li-price')?.value) || 0);
+      });
+      document.querySelectorAll('#edit-labor-list .line-item').forEach(li => {
+        subtotal += (parseFloat(li.querySelector('.li-hours')?.value) || 0) * (parseFloat(li.querySelector('.li-rate')?.value) || 0);
+      });
+      document.querySelectorAll('#edit-other-list .line-item').forEach(li => {
+        subtotal += parseFloat(li.querySelector('.li-amount')?.value) || 0;
+      });
+      const taxRate = parseFloat(document.getElementById('edit-tax-rate')?.value) || 0;
+      const tax = subtotal * (taxRate / 100);
+      const totalEl = document.getElementById('edit-estimate-total');
+      if (totalEl) totalEl.textContent = formatCurrency(subtotal + tax);
+    }
+
+    function addEditLineItem(containerId, type) {
+      const container = document.getElementById(containerId);
+      const item = document.createElement('div');
+      item.className = 'line-item';
+      item.dataset.type = type;
+
+      if (type === 'part') {
+        item.innerHTML = `
+          <input type="text" placeholder="Part description" class="li-desc">
+          <input type="number" placeholder="Qty" value="1" min="1" class="li-qty">
+          <input type="number" placeholder="Price" step="0.01" min="0" class="li-price">
+          <button class="line-item-remove">&times;</button>
+        `;
+      } else if (type === 'labor') {
+        item.innerHTML = `
+          <input type="text" placeholder="Labor description" class="li-desc">
+          <input type="number" placeholder="Hours" step="0.5" min="0" class="li-hours">
+          <input type="number" placeholder="Rate/hr" step="0.01" min="0" class="li-rate">
+          <button class="line-item-remove">&times;</button>
+        `;
+      } else {
+        item.innerHTML = `
+          <input type="text" placeholder="Charge description" class="li-desc">
+          <input type="number" placeholder="Amount" step="0.01" min="0" class="li-amount" style="grid-column: span 2;">
+          <button class="line-item-remove">&times;</button>
+        `;
+      }
+
+      item.querySelector('.line-item-remove').addEventListener('click', () => { item.remove(); updateEditTotal(); });
+      item.querySelectorAll('input[type="number"]').forEach(inp => inp.addEventListener('input', updateEditTotal));
+      container.appendChild(item);
+    }
+
+    document.getElementById('edit-add-part-btn')?.addEventListener('click', () => addEditLineItem('edit-parts-list', 'part'));
+    document.getElementById('edit-add-labor-btn')?.addEventListener('click', () => addEditLineItem('edit-labor-list', 'labor'));
+    document.getElementById('edit-add-other-btn')?.addEventListener('click', () => addEditLineItem('edit-other-list', 'other'));
+
+    // Save edited estimate
+    document.getElementById('save-edit-estimate-btn')?.addEventListener('click', () => {
+      const estimates = getEstimates();
+      const idx = estimates.findIndex(e => e.id === estimateId);
+      if (idx === -1) return;
+
+      const parts = [];
+      document.querySelectorAll('#edit-parts-list .line-item').forEach(li => {
+        const desc = li.querySelector('.li-desc')?.value.trim();
+        if (desc) parts.push({ description: desc, qty: parseFloat(li.querySelector('.li-qty')?.value) || 1, price: parseFloat(li.querySelector('.li-price')?.value) || 0 });
+      });
+
+      const labor = [];
+      document.querySelectorAll('#edit-labor-list .line-item').forEach(li => {
+        const desc = li.querySelector('.li-desc')?.value.trim();
+        if (desc) labor.push({ description: desc, hours: parseFloat(li.querySelector('.li-hours')?.value) || 0, rate: parseFloat(li.querySelector('.li-rate')?.value) || 0 });
+      });
+
+      const other = [];
+      document.querySelectorAll('#edit-other-list .line-item').forEach(li => {
+        const desc = li.querySelector('.li-desc')?.value.trim();
+        if (desc) other.push({ description: desc, amount: parseFloat(li.querySelector('.li-amount')?.value) || 0 });
+      });
+
+      const taxRate = parseFloat(document.getElementById('edit-tax-rate')?.value) || 0;
+
+      estimates[idx].parts = parts;
+      estimates[idx].labor = labor;
+      estimates[idx].other = other;
+      estimates[idx].taxRate = taxRate;
+      estimates[idx].status = 'pending';
+      estimates[idx].comments.push({ author: 'Elevation Jeeps', text: 'Estimate revised and set back to pending for customer review.', date: new Date().toISOString() });
+
+      saveEstimates(estimates);
+      openEstimateModal(estimateId, 'admin');
+      renderAdminEstimates();
+    });
+
+    // Cancel edit
+    document.getElementById('cancel-edit-estimate-btn')?.addEventListener('click', () => {
+      openEstimateModal(estimateId, 'admin');
+    });
   }
 
   // Close modal
